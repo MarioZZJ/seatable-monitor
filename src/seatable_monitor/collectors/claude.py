@@ -197,7 +197,7 @@ def _extract_session_state(lines: list[str]) -> dict:
 
 
 def collect_sessions(
-    projects_dir: str, machine: str, lookback_hours: float = 5
+    projects_dir: str, machine: str, lookback_hours: float = 5, idle_timeout: int = 300
 ) -> list[TaskInfo]:
     """从 ~/.claude/projects/*/*.jsonl 采集活跃的 Claude Code 会话"""
     results = []
@@ -237,7 +237,7 @@ def collect_sessions(
 
             # 判断状态
             age_seconds = time.time() - mtime
-            if age_seconds > 300:
+            if age_seconds > idle_timeout:
                 status = "已完成"  # 5 分钟无更新视为结束
             else:
                 status = "进行中"

@@ -17,3 +17,4 @@ tasks_dir = "~/.claude/tasks"
 projects_dir = "~/.claude/projects"
 enabled = true
 lookback_hours = 5  # 只追踪最近5小时内有更新的任务
+idle_timeout = 300  # 无活动多少秒视为已完成，默认300秒

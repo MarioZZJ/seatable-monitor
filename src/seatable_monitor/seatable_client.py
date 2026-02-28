@@ -22,6 +22,7 @@ STATUS_OPTIONS = [
     {"name": "待办",   "color": "#FF8000", "textColor": "#FFFFFF"},
     {"name": "进行中", "color": "#59CB74", "textColor": "#FFFFFF"},
     {"name": "已完成", "color": "#9860E5", "textColor": "#FFFFFF"},
+    {"name": "已结束", "color": "#999999", "textColor": "#FFFFFF"},
     {"name": "未知",   "color": "#CCCCCC", "textColor": "#333333"},
 ]
 
@@ -179,6 +180,36 @@ class SeaTableClient:
         for row in self.base.query(sql):
             if row["任务名"] not in active_names:
                 self.base.delete_row(self.table_name, row["_id"])
+
+    def mark_tasks_ended(self, source: str, session_id: str, machine: str, active_names: set):
+        """将该机器/会话下已不存在的任务标记为已结束"""
+        sql = (
+            f"SELECT _id, `任务名`, `状态` FROM `{self.table_name}` "
+            f"WHERE `来源`='{source}' AND `会话ID`='{_esc(session_id)}' "
+            f"AND `机器`='{_esc(machine)}' AND `状态`='进行中'"
+        )
+        for row in self.base.query(sql):
+            if row["任务名"] not in active_names:
+                self.base.update_row(
+                    self.table_name, row["_id"],
+                    {"状态": "已结束", "更新时间": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+                )
+                logger.info("已标记任务结束：%s", row["任务名"])
+
+    def mark_ended_sessions(self, source: str, active_sessions: set, machine: str):
+        """将已消失的 session 标记为已结束"""
+        sql = (
+            f"SELECT _id, `会话ID`, `状态` FROM `{self.table_name}` "
+            f"WHERE `来源`='{source}' AND `机器`='{_esc(machine)}' "
+            f"AND `状态`='进行中'"
+        )
+        for row in self.base.query(sql):
+            if row["会话ID"] not in active_sessions:
+                self.base.update_row(
+                    self.table_name, row["_id"],
+                    {"状态": "已结束", "更新时间": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+                )
+                logger.info("已标记 session 结束：%s", row["会话ID"])
 
     def refresh_auth_if_needed(self):
         """base_token 有效期 3 天，超 2 天自动刷新"""

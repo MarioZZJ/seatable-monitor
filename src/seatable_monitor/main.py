@@ -61,19 +61,23 @@ def _run_once(config: dict, client: SeaTableClient, machine: str):
         for t in tasks:
             active_sessions.setdefault(t.session_id, set()).add(t.name)
             client.upsert_task(t)
-        # 清理已消失的 session 行
-        for session_id, active_names in active_sessions.items():
-            client.remove_stale_tasks("tmux", session_id, machine, active_names)
+
+        # 标记已消失的 session 为"已结束"
+        all_current_sessions = set()
+        for session_id in active_sessions.keys():
+            all_current_sessions.add(session_id)
+        client.mark_ended_sessions("tmux", all_current_sessions, machine)
 
     # Claude Code 采集
     claude_conf = config.get("claude", {})
     if claude_conf.get("enabled", True):
         lookback = claude_conf.get("lookback_hours", 5)
+        idle_timeout = claude_conf.get("idle_timeout", 300)
         todos = collect_todos(claude_conf.get("todos_dir", "~/.claude/todos"), machine, lookback)
         task_list = collect_tasks(claude_conf.get("tasks_dir", "~/.claude/tasks"), machine, lookback)
         sessions = collect_sessions(
             claude_conf.get("projects_dir", "~/.claude/projects"),
-            machine, lookback,
+            machine, lookback, idle_timeout,
         )
         for t in todos + task_list + sessions:
             client.upsert_task(t)
