@@ -1,0 +1,12 @@
+[project]
+name = "seatable-monitor"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = ["seatable-api"]
+
+[project.scripts]
+seatable-monitor = "seatable_monitor.main:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
