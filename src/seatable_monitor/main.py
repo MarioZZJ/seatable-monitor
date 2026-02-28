@@ -6,7 +6,7 @@ import time
 from .config import load_config
 from .seatable_client import SeaTableClient
 from .collectors.tmux import collect_by_prefixes
-from .collectors.claude import collect_todos, collect_tasks
+from .collectors.claude import collect_todos, collect_tasks, collect_sessions
 
 logger = logging.getLogger("seatable-monitor")
 _running = True
@@ -71,7 +71,11 @@ def _run_once(config: dict, client: SeaTableClient, machine: str):
         lookback = claude_conf.get("lookback_hours", 5)
         todos = collect_todos(claude_conf.get("todos_dir", "~/.claude/todos"), machine, lookback)
         task_list = collect_tasks(claude_conf.get("tasks_dir", "~/.claude/tasks"), machine, lookback)
-        for t in todos + task_list:
+        sessions = collect_sessions(
+            claude_conf.get("projects_dir", "~/.claude/projects"),
+            machine, lookback,
+        )
+        for t in todos + task_list + sessions:
             client.upsert_task(t)
 
 

@@ -14,5 +14,6 @@ session_prefixes = ["work", "train"]
 [claude]
 todos_dir = "~/.claude/todos"
 tasks_dir = "~/.claude/tasks"
+projects_dir = "~/.claude/projects"
 enabled = true
 lookback_hours = 5  # 只追踪最近5小时内有更新的任务

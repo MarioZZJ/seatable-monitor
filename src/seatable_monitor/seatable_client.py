@@ -26,8 +26,9 @@ STATUS_OPTIONS = [
 ]
 
 SOURCE_OPTIONS = [
-    {"name": "tmux",        "color": "#4A90D9", "textColor": "#FFFFFF"},
-    {"name": "claude-code", "color": "#5BC8C0", "textColor": "#FFFFFF"},
+    {"name": "tmux",            "color": "#4A90D9", "textColor": "#FFFFFF"},
+    {"name": "claude-code",     "color": "#5BC8C0", "textColor": "#FFFFFF"},
+    {"name": "claude-session",  "color": "#E57373", "textColor": "#FFFFFF"},
 ]
 
 
@@ -84,6 +85,11 @@ class SeaTableClient:
                 self.base.insert_column(
                     self.table_name, col_name, col_type,
                     column_data={"table": self.table_name, "other_table": self.table_name}
+                )
+            elif col_type == ColumnTypes.DATE:
+                self.base.insert_column(
+                    self.table_name, col_name, col_type,
+                    column_data={"format": "YYYY-MM-DD HH:mm"}
                 )
             else:
                 self.base.insert_column(self.table_name, col_name, col_type)
