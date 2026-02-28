@@ -6,9 +6,9 @@
 
 ## 效果
 
-SeaTable 看板按 `状态` 列分组：`待办` → `进行中` → `已完成` → `未知`
+SeaTable 看板按 `状态` 列分组：`待办` → `进行中` → `已完成` → `已结束` → `未知`
 
-每行包含：任务名、状态、来源（tmux/claude-code）、会话ID、最新输出、更新时间、所属机器。
+每行包含：任务名、状态、来源（tmux/claude-code/claude-session）、会话ID、最新输出、更新时间、所属机器。
 
 ## 前置要求
 
@@ -54,10 +54,12 @@ hostname = ""        # 留空自动取 socket.gethostname()
 session_prefixes = ["work", "train"]
 
 [claude]
-todos_dir     = "~/.claude/todos"
-tasks_dir     = "~/.claude/tasks"
-enabled       = true
-lookback_hours = 5   # 只追踪最近 5 小时内有更新的任务
+todos_dir      = "~/.claude/todos"
+tasks_dir      = "~/.claude/tasks"
+projects_dir   = "~/.claude/projects"    # Claude Code 项目会话目录
+enabled        = true
+lookback_hours = 5                      # 只追踪最近 N 小时内有更新的任务
+idle_timeout   = 300                     # 无活动多少秒视为"已完成"，默认300秒
 ```
 
 **4. 安装并启动服务**
@@ -132,6 +134,14 @@ seatable-monitor/
     ├── com.seatable-monitor.plist    # macOS launchd
     └── seatable-monitor.service      # Linux systemd
 ```
+
+## 监控范围
+
+| 来源 | 数据来源 | 说明 |
+|------|----------|------|
+| tmux | `tmux ls` | session 消失时标记为"已结束" |
+| claude-code | `~/.claude/todos`, `~/.claude/tasks` | TaskCreate/TodoWrite 任务 |
+| claude-session | `~/.claude/projects/*.jsonl` | 活跃会话，无活动超过 `idle_timeout` 秒视为"已完成" |
 
 ## 安全说明
 
