@@ -6,9 +6,8 @@
     <string>com.seatable-monitor</string>
     <key>ProgramArguments</key>
     <array>
-        <string>/bin/sh</string>
-        <string>-c</string>
-        <string>cd ~/Documents/project/seatable-monitor && uv run python -m seatable_monitor</string>
+        <string>/bin/bash</string>
+        <string>PROJECTDIR/deploy/run.sh</string>
     </array>
     <key>EnvironmentVariables</key>
     <dict>

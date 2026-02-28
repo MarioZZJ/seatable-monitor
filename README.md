@@ -20,9 +20,8 @@ SeaTable 看板按 `状态` 列分组：`待办` → `进行中` → `已完成`
 ## 安装
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/seatable-monitor.git ~/Documents/project/seatable-monitor
-cd ~/Documents/project/seatable-monitor
-uv sync
+git clone https://github.com/YOUR_USERNAME/seatable-monitor.git ~/seatable-monitor
+cd ~/seatable-monitor
 ```
 
 ## 配置
@@ -61,31 +60,25 @@ enabled       = true
 lookback_hours = 5   # 只追踪最近 5 小时内有更新的任务
 ```
 
-**4. 验证配置**
+**4. 安装并启动服务**
 
-```bash
-cd ~/Documents/project/seatable-monitor
-uv run python -c "from seatable_monitor.main import main; print('ok')"
-```
-
-## 运行
-
-### 前台测试
-
-```bash
-cd ~/Documents/project/seatable-monitor
-uv run python -m seatable_monitor
-```
-
-首次运行会自动在 SeaTable 中建表、建列、建选项。
-
-### 后台服务
-
-运行安装脚本，自动检测平台（macOS/Linux）并安装为系统服务：
+安装脚本会自动创建 venv、安装依赖，并注册为系统服务（macOS launchd / Linux systemd）：
 
 ```bash
 bash deploy/install.sh
 ```
+
+首次运行会自动在 SeaTable 中建表、建列、建选项。
+
+> **macOS 提示**：首次启动时系统可能弹出 TCC 权限请求，点击允许即可。如果进程卡住无输出，请在 **系统设置 → 隐私与安全性 → 完全磁盘访问权限** 中授权 `/bin/bash`。
+
+### 前台测试
+
+```bash
+bash deploy/run.sh
+```
+
+### 管理服务
 
 **macOS（launchd）**
 
@@ -94,11 +87,11 @@ bash deploy/install.sh
 tail -f /tmp/seatable-monitor.log
 
 # 停止服务
-launchctl unload ~/Library/LaunchAgents/com.seatable-monitor.plist
+launchctl bootout gui/$(id -u) ~/Library/LaunchAgents/com.seatable-monitor.plist
 
 # 重启服务
-launchctl unload ~/Library/LaunchAgents/com.seatable-monitor.plist
-launchctl load   ~/Library/LaunchAgents/com.seatable-monitor.plist
+launchctl bootout gui/$(id -u) ~/Library/LaunchAgents/com.seatable-monitor.plist
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.seatable-monitor.plist
 ```
 
 **Linux（systemd user service）**
@@ -135,6 +128,7 @@ seatable-monitor/
 │       └── claude.py        # Claude Code 任务采集
 └── deploy/
     ├── install.sh                    # 自动安装脚本
+    ├── run.sh                        # 跨平台启动入口
     ├── com.seatable-monitor.plist    # macOS launchd
     └── seatable-monitor.service      # Linux systemd
 ```

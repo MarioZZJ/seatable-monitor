@@ -63,15 +63,21 @@ class SeaTableClient:
 
     def _ensure_columns(self):
         metadata = self.base.get_metadata()
-        existing_cols = {
-            c["name"]
-            for t in metadata["tables"]
-            if t["name"] == self.table_name
-            for c in t.get("columns", [])
-        }
+        existing_cols = {}
+        for t in metadata["tables"]:
+            if t["name"] == self.table_name:
+                for c in t.get("columns", []):
+                    existing_cols[c["name"]] = c
+
+        # 首列可能叫 Name，重命名为"任务名"
+        if "Name" in existing_cols and "任务名" not in existing_cols:
+            self.base.rename_column(self.table_name, existing_cols["Name"]["key"], "任务名")
+            logger.info("已将首列 Name 重命名为 任务名")
+
+        existing_col_names = set(existing_cols.keys()) | {"任务名"}
 
         for col_name, col_type in COLUMNS:
-            if col_name in existing_cols:
+            if col_name in existing_col_names:
                 continue
             if col_type == ColumnTypes.LINK:
                 # 自关联：父任务指向同表
